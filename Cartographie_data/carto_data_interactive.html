@@ -1,0 +1,662 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+<script type="text/javascript">
+
+function getNextLevelNeighbors(nodeIds) {
+    var neighbors = new Set();
+    nodeIds.forEach(id => {
+        network.getConnectedNodes(id).forEach(n => neighbors.add(n));
+    });
+    return Array.from(neighbors);
+}
+
+function applyFilters() {
+    var roleId = document.getElementById('roleFilter').value;
+    var catName = document.getElementById('catFilter').value;
+    var allNodes = nodes.get();
+    
+    if (roleId !== 'all') {
+        var level1 = network.getConnectedNodes(roleId);
+        var potentialL2 = getNextLevelNeighbors(level1);
+        var level2 = potentialL2.filter(id => {
+            var n = nodes.get(id);
+            return n && (n.category === "Theory/Math" || n.category === "DataOps/ETL");
+        });
+        var potentialL3 = getNextLevelNeighbors(level2);
+        var level3 = potentialL3.filter(id => {
+            var n = nodes.get(id);
+            return n && ["Language", "Tool/BI", "Cloud/DW"].includes(n.category);
+        });
+
+        var visibleIds = [roleId, ...level1, ...level2, ...level3];
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: !visibleIds.includes(n.id) })));
+
+        // Zoom spécifique métier
+        setTimeout(() => {
+            network.focus(roleId, {
+                scale: 0.8, 
+                animation: { duration: 1000 }
+            });
+        }, 300);
+
+    } else if (catName !== 'all') {
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: n.category !== catName })));
+        setTimeout(() => { network.fit({ animation: true }); }, 300);
+    } else {
+        resetGraph();
+    }
+}
+
+network.on("doubleClick", function(params) {
+    if (params.nodes.length > 0) {
+        var root = params.nodes[0];
+        var l1 = network.getConnectedNodes(root);
+        var l2 = getNextLevelNeighbors(l1);
+        var neighborhood = new Set([root, ...l1, ...l2]);
+        nodes.update(nodes.get().map(n => ({ id: n.id, hidden: !neighborhood.has(n.id) })));
+        network.focus(root, { scale: 1.0, animation: true });
+    }
+});
+
+// FONCTION RÉINITIALISER
+function resetGraph() {
+    nodes.update(nodes.get().map(n => ({id: n.id, hidden: false})));
+    document.getElementById('roleFilter').value = 'all';
+    document.getElementById('catFilter').value = 'all';
+    
+    // On attend un tout petit peu que les noeuds "reviennent" avant de cadrer
+    setTimeout(() => {
+        network.moveTo({
+            position: {x: 0, y: 0},
+            scale: 0.6, // <--- RÉGLAGE ZOOM RÉINITIALISATION
+            animation: { duration: 1000 }
+        });
+    }, 200);
+}
+
+// ZOOM AU DÉMARRAGE : Méthode de sécurité
+network.on("stabilizationIterationsDone", function () {
+    network.moveTo({
+        position: {x: 0, y: 0},
+        scale: 0.6, // <--- RÉGLAGE ZOOM DÉMARRAGE
+        animation: { duration: 800 }
+    });
+});
+
+</script>
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="text/javascript">
+
+function getNextLevelNeighbors(nodeIds) {
+    var neighbors = new Set();
+    nodeIds.forEach(id => {
+        network.getConnectedNodes(id).forEach(n => neighbors.add(n));
+    });
+    return Array.from(neighbors);
+}
+
+function applyFilters() {
+    var roleId = document.getElementById('roleFilter').value;
+    var catName = document.getElementById('catFilter').value;
+    var allNodes = nodes.get();
+    
+    if (roleId !== 'all') {
+        var level1 = network.getConnectedNodes(roleId);
+        var potentialL2 = getNextLevelNeighbors(level1);
+        var level2 = potentialL2.filter(id => {
+            var n = nodes.get(id);
+            return n && (n.category === "Theory/Math" || n.category === "DataOps/ETL");
+        });
+        var potentialL3 = getNextLevelNeighbors(level2);
+        var level3 = potentialL3.filter(id => {
+            var n = nodes.get(id);
+            return n && ["Language", "Tool/BI", "Cloud/DW"].includes(n.category);
+        });
+
+        var visibleIds = [roleId, ...level1, ...level2, ...level3];
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: !visibleIds.includes(n.id) })));
+
+        // Zoom spécifique métier
+        setTimeout(() => {
+            network.focus(roleId, {
+                scale: 0.8, 
+                animation: { duration: 1000 }
+            });
+        }, 300);
+
+    } else if (catName !== 'all') {
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: n.category !== catName })));
+        setTimeout(() => { network.fit({ animation: true }); }, 300);
+    } else {
+        resetGraph();
+    }
+}
+
+network.on("doubleClick", function(params) {
+    if (params.nodes.length > 0) {
+        var root = params.nodes[0];
+        var l1 = network.getConnectedNodes(root);
+        var l2 = getNextLevelNeighbors(l1);
+        var neighborhood = new Set([root, ...l1, ...l2]);
+        nodes.update(nodes.get().map(n => ({ id: n.id, hidden: !neighborhood.has(n.id) })));
+        network.focus(root, { scale: 1.0, animation: true });
+    }
+});
+
+// FONCTION RÉINITIALISER
+function resetGraph() {
+    nodes.update(nodes.get().map(n => ({id: n.id, hidden: false})));
+    document.getElementById('roleFilter').value = 'all';
+    document.getElementById('catFilter').value = 'all';
+    
+    // On attend un tout petit peu que les noeuds "reviennent" avant de cadrer
+    setTimeout(() => {
+        network.moveTo({
+            position: {x: 0, y: 0},
+            scale: 0.6, // <--- RÉGLAGE ZOOM RÉINITIALISATION
+            animation: { duration: 1000 }
+        });
+    }, 200);
+}
+
+// ZOOM AU DÉMARRAGE : Méthode de sécurité
+network.on("stabilizationIterationsDone", function () {
+    network.moveTo({
+        position: {x: 0, y: 0},
+        scale: 0.6, // <--- RÉGLAGE ZOOM DÉMARRAGE
+        animation: { duration: 800 }
+    });
+});
+
+</script>
+
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>
+<script type="text/javascript">
+
+function getNextLevelNeighbors(nodeIds) {
+    var neighbors = new Set();
+    nodeIds.forEach(id => {
+        network.getConnectedNodes(id).forEach(n => neighbors.add(n));
+    });
+    return Array.from(neighbors);
+}
+
+function applyFilters() {
+    var roleId = document.getElementById('roleFilter').value;
+    var catName = document.getElementById('catFilter').value;
+    var allNodes = nodes.get();
+    
+    if (roleId !== 'all') {
+        var level1 = network.getConnectedNodes(roleId);
+        var potentialL2 = getNextLevelNeighbors(level1);
+        var level2 = potentialL2.filter(id => {
+            var n = nodes.get(id);
+            return n && (n.category === "Theory/Math" || n.category === "DataOps/ETL");
+        });
+        var potentialL3 = getNextLevelNeighbors(level2);
+        var level3 = potentialL3.filter(id => {
+            var n = nodes.get(id);
+            return n && ["Language", "Tool/BI", "Cloud/DW"].includes(n.category);
+        });
+
+        var visibleIds = [roleId, ...level1, ...level2, ...level3];
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: !visibleIds.includes(n.id) })));
+
+        // Zoom spécifique métier
+        setTimeout(() => {
+            network.focus(roleId, {
+                scale: 0.8, 
+                animation: { duration: 1000 }
+            });
+        }, 300);
+
+    } else if (catName !== 'all') {
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: n.category !== catName })));
+        setTimeout(() => { network.fit({ animation: true }); }, 300);
+    } else {
+        resetGraph();
+    }
+}
+
+network.on("doubleClick", function(params) {
+    if (params.nodes.length > 0) {
+        var root = params.nodes[0];
+        var l1 = network.getConnectedNodes(root);
+        var l2 = getNextLevelNeighbors(l1);
+        var neighborhood = new Set([root, ...l1, ...l2]);
+        nodes.update(nodes.get().map(n => ({ id: n.id, hidden: !neighborhood.has(n.id) })));
+        network.focus(root, { scale: 1.0, animation: true });
+    }
+});
+
+// FONCTION RÉINITIALISER
+function resetGraph() {
+    nodes.update(nodes.get().map(n => ({id: n.id, hidden: false})));
+    document.getElementById('roleFilter').value = 'all';
+    document.getElementById('catFilter').value = 'all';
+    
+    // On attend un tout petit peu que les noeuds "reviennent" avant de cadrer
+    setTimeout(() => {
+        network.moveTo({
+            position: {x: 0, y: 0},
+            scale: 0.6, // <--- RÉGLAGE ZOOM RÉINITIALISATION
+            animation: { duration: 1000 }
+        });
+    }, 200);
+}
+
+// ZOOM AU DÉMARRAGE : Méthode de sécurité
+network.on("stabilizationIterationsDone", function () {
+    network.moveTo({
+        position: {x: 0, y: 0},
+        scale: 0.6, // <--- RÉGLAGE ZOOM DÉMARRAGE
+        animation: { duration: 800 }
+    });
+});
+
+</script>
+-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+<script type="text/javascript">
+
+function getNextLevelNeighbors(nodeIds) {
+    var neighbors = new Set();
+    nodeIds.forEach(id => {
+        network.getConnectedNodes(id).forEach(n => neighbors.add(n));
+    });
+    return Array.from(neighbors);
+}
+
+function applyFilters() {
+    var roleId = document.getElementById('roleFilter').value;
+    var catName = document.getElementById('catFilter').value;
+    var allNodes = nodes.get();
+    
+    if (roleId !== 'all') {
+        var level1 = network.getConnectedNodes(roleId);
+        var potentialL2 = getNextLevelNeighbors(level1);
+        var level2 = potentialL2.filter(id => {
+            var n = nodes.get(id);
+            return n && (n.category === "Theory/Math" || n.category === "DataOps/ETL");
+        });
+        var potentialL3 = getNextLevelNeighbors(level2);
+        var level3 = potentialL3.filter(id => {
+            var n = nodes.get(id);
+            return n && ["Language", "Tool/BI", "Cloud/DW"].includes(n.category);
+        });
+
+        var visibleIds = [roleId, ...level1, ...level2, ...level3];
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: !visibleIds.includes(n.id) })));
+
+        // Zoom spécifique métier
+        setTimeout(() => {
+            network.focus(roleId, {
+                scale: 0.8, 
+                animation: { duration: 1000 }
+            });
+        }, 300);
+
+    } else if (catName !== 'all') {
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: n.category !== catName })));
+        setTimeout(() => { network.fit({ animation: true }); }, 300);
+    } else {
+        resetGraph();
+    }
+}
+
+network.on("doubleClick", function(params) {
+    if (params.nodes.length > 0) {
+        var root = params.nodes[0];
+        var l1 = network.getConnectedNodes(root);
+        var l2 = getNextLevelNeighbors(l1);
+        var neighborhood = new Set([root, ...l1, ...l2]);
+        nodes.update(nodes.get().map(n => ({ id: n.id, hidden: !neighborhood.has(n.id) })));
+        network.focus(root, { scale: 1.0, animation: true });
+    }
+});
+
+// FONCTION RÉINITIALISER
+function resetGraph() {
+    nodes.update(nodes.get().map(n => ({id: n.id, hidden: false})));
+    document.getElementById('roleFilter').value = 'all';
+    document.getElementById('catFilter').value = 'all';
+    
+    // On attend un tout petit peu que les noeuds "reviennent" avant de cadrer
+    setTimeout(() => {
+        network.moveTo({
+            position: {x: 0, y: 0},
+            scale: 0.6, // <--- RÉGLAGE ZOOM RÉINITIALISATION
+            animation: { duration: 1000 }
+        });
+    }, 200);
+}
+
+// ZOOM AU DÉMARRAGE : Méthode de sécurité
+network.on("stabilizationIterationsDone", function () {
+    network.moveTo({
+        position: {x: 0, y: 0},
+        scale: 0.6, // <--- RÉGLAGE ZOOM DÉMARRAGE
+        animation: { duration: 800 }
+    });
+});
+
+</script>
+
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1a1a1a;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+<div style="position: absolute; top: 10px; right: 10px; padding: 15px; background: rgba(30, 30, 30, 0.9); color: white; border: 1px solid #555; z-index: 1001; font-family: sans-serif; border-radius: 8px; width: 220px;">
+    <b style="color: #FF8C00;">🎯 Focus Métier</b>
+    <select id="roleFilter" style="width:100%; margin: 10px 0;" onchange="applyFilters()">
+        <option value="all">-- Tous les métiers --</option>
+        <option value="AI Engineer">AI Engineer</option> <option value="Business Analyst">Business Analyst</option> <option value="Data Analyst">Data Analyst</option> <option value="Data Architect">Data Architect</option> <option value="Data Engineer">Data Engineer</option> <option value="Data Scientist">Data Scientist</option> <option value="ML Engineer">ML Engineer</option> <option value="Research Scientist">Research Scientist</option> <option value="Statistician">Statistician</option>
+    </select>
+    
+    <b style="color: #4682B4;">📂 Filtrer Catégorie</b>
+    <select id="catFilter" style="width:100%; margin: 10px 0;" onchange="applyFilters()">
+        <option value="all">-- Toutes --</option>
+        <option value="Cloud/DW">Cloud/DW</option> <option value="DataOps/ETL">DataOps/ETL</option> <option value="Function">Function</option> <option value="Language">Language</option> <option value="Role">Role</option> <option value="Theory/Math">Theory/Math</option> <option value="Tool/BI">Tool/BI</option>
+    </select>
+    <button onclick="resetGraph()" style="margin-top:10px; width:100%; cursor:pointer; background:#444; color:white; border:none; padding:5px;">Réinitialiser</button>
+</div>
+
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Cloud Strategy", "label": "Cloud Strategy", "shape": "dot", "size": 24, "title": "Cloud Strategy\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- AWS / Azure / GCP\n- Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global"}, {"category": "Cloud/DW", "color": "#87CEEB", "font": {"color": "white"}, "id": "AWS / Azure / GCP", "label": "AWS / Azure / GCP", "shape": "dot", "size": 26, "title": "AWS / Azure / GCP\nCat\u00e9gorie : Cloud/DW\n\nConnexions :\n- Cloud Strategy\n- Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global\n- Terraform"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global", "label": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global", "shape": "dot", "size": 30, "title": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global\nCat\u00e9gorie : Function\n\nConnexions :\n- AWS / Azure / GCP\n- Snowflake\n- Data Architect\n- Data Architecture Framework\n- Cloud Strategy"}, {"category": "Cloud/DW", "color": "#87CEEB", "font": {"color": "white"}, "id": "Snowflake", "label": "Snowflake", "shape": "dot", "size": 30, "title": "Snowflake\nCat\u00e9gorie : Cloud/DW\n\nConnexions :\n- Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global\n- dbt\n- D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)\n- Nettoyage de donn\u00e9es\n- Terraform"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "dbt", "label": "dbt", "shape": "dot", "size": 32, "title": "dbt\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Snowflake\n- Dagster\n- D\u00e9finir la strat\u00e9gie data et les standards\n- ELT\n- SQL\n- Python"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)", "label": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)", "shape": "dot", "size": 30, "title": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)\nCat\u00e9gorie : Function\n\nConnexions :\n- Snowflake\n- Data Architect\n- Data Modeling\n- DB Design\n- Star Schema"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Nettoyage de donn\u00e9es", "label": "Nettoyage de donn\u00e9es", "shape": "dot", "size": 28, "title": "Nettoyage de donn\u00e9es\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Snowflake\n- SQL\n- Pr\u00e9parer les donn\u00e9es\n- Power Query"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Terraform", "label": "Terraform", "shape": "dot", "size": 28, "title": "Terraform\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Snowflake\n- AWS / Azure / GCP\n- GitHub Actions\n- Infrastructure as Code (IaC)"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Acqu\u00e9rir les donn\u00e9es", "label": "Acqu\u00e9rir les donn\u00e9es", "shape": "dot", "size": 34, "title": "Acqu\u00e9rir les donn\u00e9es\nCat\u00e9gorie : Function\n\nConnexions :\n- ETL / ELT\n- API \u0026 Scraping\n- Flux de donn\u00e9es (Streams)\n- Data Analyst\n- Data Engineer\n- Data Scientist\n- Spark"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "ETL / ELT", "label": "ETL / ELT", "shape": "dot", "size": 28, "title": "ETL / ELT\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Acqu\u00e9rir les donn\u00e9es\n- ETL\n- ELT\n- Pr\u00e9parer les donn\u00e9es"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "API \u0026 Scraping", "label": "API \u0026 Scraping", "shape": "dot", "size": 28, "title": "API \u0026 Scraping\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Acqu\u00e9rir les donn\u00e9es\n- Requests\n- BeautifulSoup\n- Selenium"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Flux de donn\u00e9es (Streams)", "label": "Flux de donn\u00e9es (Streams)", "shape": "dot", "size": 24, "title": "Flux de donn\u00e9es (Streams)\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Acqu\u00e9rir les donn\u00e9es\n- Kafka"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Automatiser les d\u00e9ploiements", "label": "Automatiser les d\u00e9ploiements", "shape": "dot", "size": 26, "title": "Automatiser les d\u00e9ploiements\nCat\u00e9gorie : Function\n\nConnexions :\n- CI/CD\n- Data Engineer\n- ML Engineer"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "CI/CD", "label": "CI/CD", "shape": "dot", "size": 28, "title": "CI/CD\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Automatiser les d\u00e9ploiements\n- GitHub Actions\n- Groovy\n- Jenkins"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "GitHub Actions", "label": "GitHub Actions", "shape": "dot", "size": 28, "title": "GitHub Actions\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- CI/CD\n- Industrialiser les mod\u00e8les\n- Terraform\n- GitHub"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Construire des pipelines", "label": "Construire des pipelines", "shape": "dot", "size": 24, "title": "Construire des pipelines\nCat\u00e9gorie : Function\n\nConnexions :\n- Orchestration\n- Data Engineer"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Orchestration", "label": "Orchestration", "shape": "dot", "size": 28, "title": "Orchestration\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Construire des pipelines\n- Airflow\n- Dagster\n- Prefect"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Dagster", "label": "Dagster", "shape": "dot", "size": 28, "title": "Dagster\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- dbt\n- Data Assets (Actifs)\n- Orchestration\n- Python"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Data Assets (Actifs)", "label": "Data Assets (Actifs)", "shape": "dot", "size": 24, "title": "Data Assets (Actifs)\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Dagster\n- Orchestrer les flux"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "D\u00e9finir la strat\u00e9gie data et les standards", "label": "D\u00e9finir la strat\u00e9gie data et les standards", "shape": "dot", "size": 26, "title": "D\u00e9finir la strat\u00e9gie data et les standards\nCat\u00e9gorie : Function\n\nConnexions :\n- dbt\n- Data Architect\n- Data Strategy"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "D\u00e9ployer des APIs", "label": "D\u00e9ployer des APIs", "shape": "dot", "size": 26, "title": "D\u00e9ployer des APIs\nCat\u00e9gorie : Function\n\nConnexions :\n- Docker / Kubernetes\n- ML Engineer\n- FastAPI"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Docker / Kubernetes", "label": "Docker / Kubernetes", "shape": "dot", "size": 24, "title": "Docker / Kubernetes\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- D\u00e9ployer des APIs\n- Industrialiser les mod\u00e8les"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "ELT", "label": "ELT", "shape": "dot", "size": 28, "title": "ELT\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- dbt\n- Fivetran\n- Airbyte\n- ETL / ELT"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Fivetran", "label": "Fivetran", "shape": "dot", "size": 22, "title": "Fivetran\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- ELT"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Airbyte", "label": "Airbyte", "shape": "dot", "size": 22, "title": "Airbyte\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- ELT"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "ETL", "label": "ETL", "shape": "dot", "size": 26, "title": "ETL\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Talend\n- Informatica PowerCenter\n- ETL / ELT"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Talend", "label": "Talend", "shape": "dot", "size": 22, "title": "Talend\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- ETL"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Informatica PowerCenter", "label": "Informatica PowerCenter", "shape": "dot", "size": 22, "title": "Informatica PowerCenter\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- ETL"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Kafka", "label": "Kafka", "shape": "dot", "size": 22, "title": "Kafka\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Flux de donn\u00e9es (Streams)"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Industrialiser les mod\u00e8les", "label": "Industrialiser les mod\u00e8les", "shape": "dot", "size": 38, "title": "Industrialiser les mod\u00e8les\nCat\u00e9gorie : Function\n\nConnexions :\n- Docker / Kubernetes\n- GitHub Actions\n- GitLab CI\n- ML Engineer\n- Machine Learning\n- FastAPI\n- Flask\n- MLflow\n- Spark"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "GitLab CI", "label": "GitLab CI", "shape": "dot", "size": 22, "title": "GitLab CI\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Industrialiser les mod\u00e8les"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Airflow", "label": "Airflow", "shape": "dot", "size": 22, "title": "Airflow\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Orchestration"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Prefect", "label": "Prefect", "shape": "dot", "size": 22, "title": "Prefect\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Orchestration"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Pr\u00e9parer les donn\u00e9es", "label": "Pr\u00e9parer les donn\u00e9es", "shape": "dot", "size": 28, "title": "Pr\u00e9parer les donn\u00e9es\nCat\u00e9gorie : Function\n\nConnexions :\n- ETL / ELT\n- Data Analyst\n- Data Scientist\n- Nettoyage de donn\u00e9es"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "AI Engineer", "label": "AI Engineer", "shape": "square", "size": 32, "title": "AI Engineer\nCat\u00e9gorie : Role\n\nConnexions :\n- D\u00e9velopper des applications IA / GenAI\n- Impl\u00e9menter des syst\u00e8mes RAG\n- Construire des agents IA autonomes\n- Optimiser les mod\u00e8les en production (inf\u00e9rence)\n- Mettre en place monitoring \u0026 safety (guardrails)\n- Fine-tuner et adapter des LLMs"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "D\u00e9velopper des applications IA / GenAI", "label": "D\u00e9velopper des applications IA / GenAI", "shape": "dot", "size": 28, "title": "D\u00e9velopper des applications IA / GenAI\nCat\u00e9gorie : Function\n\nConnexions :\n- AI Engineer\n- Generative AI / LLMs\n- NLP / Computer Vision\n- LangChain"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Impl\u00e9menter des syst\u00e8mes RAG", "label": "Impl\u00e9menter des syst\u00e8mes RAG", "shape": "dot", "size": 28, "title": "Impl\u00e9menter des syst\u00e8mes RAG\nCat\u00e9gorie : Function\n\nConnexions :\n- AI Engineer\n- Retrieval-Augmented Generation\n- LangChain\n- LlamaIndex"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Construire des agents IA autonomes", "label": "Construire des agents IA autonomes", "shape": "dot", "size": 26, "title": "Construire des agents IA autonomes\nCat\u00e9gorie : Function\n\nConnexions :\n- AI Engineer\n- AI Agents\n- LangChain"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Optimiser les mod\u00e8les en production (inf\u00e9rence)", "label": "Optimiser les mod\u00e8les en production (inf\u00e9rence)", "shape": "dot", "size": 24, "title": "Optimiser les mod\u00e8les en production (inf\u00e9rence)\nCat\u00e9gorie : Function\n\nConnexions :\n- AI Engineer\n- Model Optimization"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Mettre en place monitoring \u0026 safety (guardrails)", "label": "Mettre en place monitoring \u0026 safety (guardrails)", "shape": "dot", "size": 26, "title": "Mettre en place monitoring \u0026 safety (guardrails)\nCat\u00e9gorie : Function\n\nConnexions :\n- AI Engineer\n- AI Safety \u0026 Alignment\n- Evidently AI"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Fine-tuner et adapter des LLMs", "label": "Fine-tuner et adapter des LLMs", "shape": "dot", "size": 28, "title": "Fine-tuner et adapter des LLMs\nCat\u00e9gorie : Function\n\nConnexions :\n- AI Engineer\n- Fine-tuning / PEFT\n- Prompt Engineering\n- Hugging Face"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "Business Analyst", "label": "Business Analyst", "shape": "square", "size": 30, "title": "Business Analyst\nCat\u00e9gorie : Role\n\nConnexions :\n- Analyser les besoins m\u00e9tier\n- Traduire besoins en exigences / user stories\n- Animer ateliers et recueillir besoins\n- \u00c9valuer solutions et mesurer impact / ROI\n- Accompagner le changement et l\u2019adoption"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Analyser les besoins m\u00e9tier", "label": "Analyser les besoins m\u00e9tier", "shape": "dot", "size": 26, "title": "Analyser les besoins m\u00e9tier\nCat\u00e9gorie : Function\n\nConnexions :\n- Business Analyst\n- Storytelling\n- Excel"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Traduire besoins en exigences / user stories", "label": "Traduire besoins en exigences / user stories", "shape": "dot", "size": 26, "title": "Traduire besoins en exigences / user stories\nCat\u00e9gorie : Function\n\nConnexions :\n- Business Analyst\n- User Stories\n- M\u00e9thodologie Agile"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Animer ateliers et recueillir besoins", "label": "Animer ateliers et recueillir besoins", "shape": "dot", "size": 24, "title": "Animer ateliers et recueillir besoins\nCat\u00e9gorie : Function\n\nConnexions :\n- Business Analyst\n- Stakeholder Management"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "\u00c9valuer solutions et mesurer impact / ROI", "label": "\u00c9valuer solutions et mesurer impact / ROI", "shape": "dot", "size": 26, "title": "\u00c9valuer solutions et mesurer impact / ROI\nCat\u00e9gorie : Function\n\nConnexions :\n- Business Analyst\n- KPI\n- ROI / Business Case"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Accompagner le changement et l\u2019adoption", "label": "Accompagner le changement et l\u2019adoption", "shape": "dot", "size": 26, "title": "Accompagner le changement et l\u2019adoption\nCat\u00e9gorie : Function\n\nConnexions :\n- Business Analyst\n- Change Management\n- Storytelling"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "Data Analyst", "label": "Data Analyst", "shape": "square", "size": 30, "title": "Data Analyst\nCat\u00e9gorie : Role\n\nConnexions :\n- Acqu\u00e9rir les donn\u00e9es\n- Pr\u00e9parer les donn\u00e9es\n- Explorer les donn\u00e9es\n- Piloter la performance\n- Coordonner le projet"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Explorer les donn\u00e9es", "label": "Explorer les donn\u00e9es", "shape": "dot", "size": 30, "title": "Explorer les donn\u00e9es\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Analyst\n- Data Scientist\n- EDA (Analyse Exploratoire)\n- Jupyter\n- Reporting"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Piloter la performance", "label": "Piloter la performance", "shape": "dot", "size": 26, "title": "Piloter la performance\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Analyst\n- KPI\n- Statistiques"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Coordonner le projet", "label": "Coordonner le projet", "shape": "dot", "size": 40, "title": "Coordonner le projet\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Analyst\n- Data Engineer\n- Data Scientist\n- ML Engineer\n- M\u00e9thodologie Agile\n- Suivi des t\u00e2ches\n- GitHub\n- Documentation\n- Tests \u0026 Qualit\u00e9\n- Changelog"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "Data Architect", "label": "Data Architect", "shape": "square", "size": 30, "title": "Data Architect\nCat\u00e9gorie : Role\n\nConnexions :\n- Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global\n- D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)\n- D\u00e9finir la strat\u00e9gie data et les standards\n- Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es\n- Traduire les besoins m\u00e9tier en architecture data"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es", "label": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es", "shape": "dot", "size": 30, "title": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Architect\n- Data Governance\n- Data Security \u0026 Compliance\n- Data Catalog\n- Great Expectations"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Traduire les besoins m\u00e9tier en architecture data", "label": "Traduire les besoins m\u00e9tier en architecture data", "shape": "dot", "size": 28, "title": "Traduire les besoins m\u00e9tier en architecture data\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Architect\n- Business Requirements Translation\n- Metadata Management\n- Jira"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "Data Engineer", "label": "Data Engineer", "shape": "square", "size": 36, "title": "Data Engineer\nCat\u00e9gorie : Role\n\nConnexions :\n- Acqu\u00e9rir les donn\u00e9es\n- Construire des pipelines\n- Mod\u00e9liser l\u0027architecture\n- Garantir la qualit\u00e9\n- Coordonner le projet\n- Automatiser les d\u00e9ploiements\n- Orchestrer les flux\n- G\u00e9rer l\u0027infrastructure"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Mod\u00e9liser l\u0027architecture", "label": "Mod\u00e9liser l\u0027architecture", "shape": "dot", "size": 24, "title": "Mod\u00e9liser l\u0027architecture\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Engineer\n- Data Modeling"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Garantir la qualit\u00e9", "label": "Garantir la qualit\u00e9", "shape": "dot", "size": 24, "title": "Garantir la qualit\u00e9\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Engineer\n- Data Governance"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Orchestrer les flux", "label": "Orchestrer les flux", "shape": "dot", "size": 26, "title": "Orchestrer les flux\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Engineer\n- ML Engineer\n- Data Assets (Actifs)"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "G\u00e9rer l\u0027infrastructure", "label": "G\u00e9rer l\u0027infrastructure", "shape": "dot", "size": 26, "title": "G\u00e9rer l\u0027infrastructure\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Engineer\n- ML Engineer\n- Infrastructure as Code (IaC)"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "Data Scientist", "label": "Data Scientist", "shape": "square", "size": 34, "title": "Data Scientist\nCat\u00e9gorie : Role\n\nConnexions :\n- Acqu\u00e9rir les donn\u00e9es\n- Explorer les donn\u00e9es\n- Pr\u00e9parer les donn\u00e9es\n- Pr\u00e9dire les tendances\n- Versionner le code\n- Coordonner le projet\n- Valider les mod\u00e8les"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Pr\u00e9dire les tendances", "label": "Pr\u00e9dire les tendances", "shape": "dot", "size": 26, "title": "Pr\u00e9dire les tendances\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Scientist\n- Machine Learning\n- MLJ.jl"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Versionner le code", "label": "Versionner le code", "shape": "dot", "size": 24, "title": "Versionner le code\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Scientist\n- Gestion de version (Git)"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Valider les mod\u00e8les", "label": "Valider les mod\u00e8les", "shape": "dot", "size": 24, "title": "Valider les mod\u00e8les\nCat\u00e9gorie : Function\n\nConnexions :\n- Data Scientist\n- Statistiques"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "ML Engineer", "label": "ML Engineer", "shape": "square", "size": 32, "title": "ML Engineer\nCat\u00e9gorie : Role\n\nConnexions :\n- Industrialiser les mod\u00e8les\n- D\u00e9ployer des APIs\n- Coordonner le projet\n- Automatiser les d\u00e9ploiements\n- Orchestrer les flux\n- G\u00e9rer l\u0027infrastructure"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "Research Scientist", "label": "Research Scientist", "shape": "square", "size": 30, "title": "Research Scientist\nCat\u00e9gorie : Role\n\nConnexions :\n- Formuler des hypoth\u00e8ses et probl\u00e8mes de recherche\n- Concevoir et mener des exp\u00e9riences / benchmarks\n- D\u00e9velopper de nouvelles m\u00e9thodes / architectures\n- Publier articles, brevets et contribuer \u00e0 la communaut\u00e9\n- Faire de la revue de litt\u00e9rature et du state-of-the-art"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Formuler des hypoth\u00e8ses et probl\u00e8mes de recherche", "label": "Formuler des hypoth\u00e8ses et probl\u00e8mes de recherche", "shape": "dot", "size": 24, "title": "Formuler des hypoth\u00e8ses et probl\u00e8mes de recherche\nCat\u00e9gorie : Function\n\nConnexions :\n- Research Scientist\n- Research Methodology"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Concevoir et mener des exp\u00e9riences / benchmarks", "label": "Concevoir et mener des exp\u00e9riences / benchmarks", "shape": "dot", "size": 28, "title": "Concevoir et mener des exp\u00e9riences / benchmarks\nCat\u00e9gorie : Function\n\nConnexions :\n- Research Scientist\n- Benchmarking (SOTA)\n- Evaluation Metrics\n- MLflow"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures", "label": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures", "shape": "dot", "size": 32, "title": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures\nCat\u00e9gorie : Function\n\nConnexions :\n- Research Scientist\n- Optimization\n- Deep Learning\n- Generative Models\n- PyTorch\n- Hugging Face"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Publier articles, brevets et contribuer \u00e0 la communaut\u00e9", "label": "Publier articles, brevets et contribuer \u00e0 la communaut\u00e9", "shape": "dot", "size": 26, "title": "Publier articles, brevets et contribuer \u00e0 la communaut\u00e9\nCat\u00e9gorie : Function\n\nConnexions :\n- Research Scientist\n- Research Papers\n- GitHub"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Faire de la revue de litt\u00e9rature et du state-of-the-art", "label": "Faire de la revue de litt\u00e9rature et du state-of-the-art", "shape": "dot", "size": 26, "title": "Faire de la revue de litt\u00e9rature et du state-of-the-art\nCat\u00e9gorie : Function\n\nConnexions :\n- Research Scientist\n- Literature Review\n- ArXiv / NeurIPS / ICML"}, {"category": "Role", "color": "#FF8C00", "font": {"color": "white"}, "id": "Statistician", "label": "Statistician", "shape": "square", "size": 30, "title": "Statistician\nCat\u00e9gorie : Role\n\nConnexions :\n- Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)\n- R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles\n- Estimer l\u0027incertitude et intervalles de confiance\n- Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)\n- Valider et interpr\u00e9ter les mod\u00e8les statistiques"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)", "label": "Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)", "shape": "dot", "size": 26, "title": "Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)\nCat\u00e9gorie : Function\n\nConnexions :\n- Statistician\n- R\n- Design of Experiments (DOE)"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles", "label": "R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles", "shape": "dot", "size": 26, "title": "R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles\nCat\u00e9gorie : Function\n\nConnexions :\n- Statistician\n- R\n- Hypothesis Testing"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Estimer l\u0027incertitude et intervalles de confiance", "label": "Estimer l\u0027incertitude et intervalles de confiance", "shape": "dot", "size": 28, "title": "Estimer l\u0027incertitude et intervalles de confiance\nCat\u00e9gorie : Function\n\nConnexions :\n- Statistician\n- Confidence Intervals\n- Probability\n- Statistiques"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)", "label": "Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)", "shape": "dot", "size": 26, "title": "Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)\nCat\u00e9gorie : Function\n\nConnexions :\n- Statistician\n- Causal Inference\n- A/B Testing"}, {"category": "Function", "color": "#4682B4", "font": {"color": "white"}, "id": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "label": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "shape": "dot", "size": 34, "title": "Valider et interpr\u00e9ter les mod\u00e8les statistiques\nCat\u00e9gorie : Function\n\nConnexions :\n- Statistician\n- R\n- Statistical Modeling\n- Regression / GLM\n- Time Series\n- \u00c9valuer la performance\n- Interpr\u00e9tabilit\u00e9"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Statistiques", "label": "Statistiques", "shape": "dot", "size": 54, "title": "Statistiques\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Valider les mod\u00e8les\n- R\n- Causal Inference\n- Design of Experiments (DOE)\n- Estimer l\u0027incertitude et intervalles de confiance\n- Hypothesis Testing\n- Maths\n- Piloter la performance\n- Python\n- Machine Learning\n- EDA (Analyse Exploratoire)\n- Scipy\n- StatsModels.jl\n- Probability\n- Statsmodels\n- SAS\n- SPSS"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "BeautifulSoup", "label": "BeautifulSoup", "shape": "dot", "size": 24, "title": "BeautifulSoup\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- API \u0026 Scraping"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "Python", "label": "Python", "shape": "dot", "size": 84, "title": "Python\nCat\u00e9gorie : Language\n\nConnexions :\n- BeautifulSoup\n- CrewAI\n- Dagster\n- dbt\n- Evidently AI\n- FastAPI\n- Flask\n- Hugging Face\n- LangChain\n- MLflow\n- ONNX\n- PyTorch\n- Requests\n- Scikit-Learn\n- Selenium\n- TensorFlow\n- Weights \u0026 Biases\n- Statistiques\n- Pandas\n- Polars\n- Matplotlib\n- Seaborn\n- Plotly\n- Scipy\n- Spark\n- Pytest\n- Jupyter\n- SHAP\n- LIME\n- Statsmodels\n- DoWhy\n- Prophet"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "Groovy", "label": "Groovy", "shape": "dot", "size": 26, "title": "Groovy\nCat\u00e9gorie : Language\n\nConnexions :\n- CI/CD\n- Java\n- Jenkins"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "R", "label": "R", "shape": "dot", "size": 34, "title": "R\nCat\u00e9gorie : Language\n\nConnexions :\n- Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)\n- R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles\n- Statistiques\n- Valider et interpr\u00e9ter les mod\u00e8les statistiques\n- Jupyter\n- Regression / GLM\n- Prophet"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "CrewAI", "label": "CrewAI", "shape": "dot", "size": 24, "title": "CrewAI\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- AI Agents"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Data Modeling", "label": "Data Modeling", "shape": "dot", "size": 30, "title": "Data Modeling\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- SQL\n- Star Schema\n- Data Governance\n- D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)\n- Mod\u00e9liser l\u0027architecture"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "SQL", "label": "SQL", "shape": "dot", "size": 32, "title": "SQL\nCat\u00e9gorie : Language\n\nConnexions :\n- Data Modeling\n- dbt\n- EDA (Analyse Exploratoire)\n- Excel\n- Nettoyage de donn\u00e9es\n- SAS"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "EDA (Analyse Exploratoire)", "label": "EDA (Analyse Exploratoire)", "shape": "dot", "size": 30, "title": "EDA (Analyse Exploratoire)\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- SQL\n- Explorer les donn\u00e9es\n- Visualisation de donn\u00e9es\n- Statistiques\n- Manipulation de donn\u00e9es"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Evidently AI", "label": "Evidently AI", "shape": "dot", "size": 24, "title": "Evidently AI\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Mettre en place monitoring \u0026 safety (guardrails)"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Excel", "label": "Excel", "shape": "dot", "size": 30, "title": "Excel\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- SQL\n- Analyser les besoins m\u00e9tier\n- Power Query\n- ROI / Business Case\n- Reporting"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "FastAPI", "label": "FastAPI", "shape": "dot", "size": 26, "title": "FastAPI\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- D\u00e9ployer des APIs\n- Industrialiser les mod\u00e8les"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Flask", "label": "Flask", "shape": "dot", "size": 24, "title": "Flask\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Industrialiser les mod\u00e8les"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "Java", "label": "Java", "shape": "dot", "size": 24, "title": "Java\nCat\u00e9gorie : Language\n\nConnexions :\n- Groovy\n- Scala"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Hugging Face", "label": "Hugging Face", "shape": "dot", "size": 26, "title": "Hugging Face\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- D\u00e9velopper de nouvelles m\u00e9thodes / architectures\n- Fine-tuner et adapter des LLMs"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Jenkins", "label": "Jenkins", "shape": "dot", "size": 24, "title": "Jenkins\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Groovy\n- CI/CD"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "LangChain", "label": "LangChain", "shape": "dot", "size": 28, "title": "LangChain\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Construire des agents IA autonomes\n- D\u00e9velopper des applications IA / GenAI\n- Impl\u00e9menter des syst\u00e8mes RAG"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "MLflow", "label": "MLflow", "shape": "dot", "size": 26, "title": "MLflow\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Concevoir et mener des exp\u00e9riences / benchmarks\n- Industrialiser les mod\u00e8les"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "ONNX", "label": "ONNX", "shape": "dot", "size": 24, "title": "ONNX\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Model Optimization"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "PyTorch", "label": "PyTorch", "shape": "dot", "size": 26, "title": "PyTorch\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Deep Learning\n- D\u00e9velopper de nouvelles m\u00e9thodes / architectures"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Requests", "label": "Requests", "shape": "dot", "size": 24, "title": "Requests\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- API \u0026 Scraping"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Scikit-Learn", "label": "Scikit-Learn", "shape": "dot", "size": 28, "title": "Scikit-Learn\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Machine Learning\n- \u00c9valuer la performance\n- Regression / GLM"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Selenium", "label": "Selenium", "shape": "dot", "size": 24, "title": "Selenium\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- API \u0026 Scraping"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "TensorFlow", "label": "TensorFlow", "shape": "dot", "size": 24, "title": "TensorFlow\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Deep Learning"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Weights \u0026 Biases", "label": "Weights \u0026 Biases", "shape": "dot", "size": 24, "title": "Weights \u0026 Biases\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Python\n- Evaluation Metrics"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "A/B Testing", "label": "A/B Testing", "shape": "dot", "size": 30, "title": "A/B Testing\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- KPI\n- Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)\n- Scipy\n- Statsmodels\n- Causal Inference"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "KPI", "label": "KPI", "shape": "dot", "size": 36, "title": "KPI\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- A/B Testing\n- \u00c9valuer solutions et mesurer impact / ROI\n- Piloter la performance\n- Power BI\n- Tableau\n- Looker\n- ROI / Business Case\n- Reporting"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Change Management", "label": "Change Management", "shape": "dot", "size": 28, "title": "Change Management\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Accompagner le changement et l\u2019adoption\n- Confluence\n- Jira\n- Documentation"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "AI Safety \u0026 Alignment", "label": "AI Safety \u0026 Alignment", "shape": "dot", "size": 24, "title": "AI Safety \u0026 Alignment\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Machine Learning\n- Mettre en place monitoring \u0026 safety (guardrails)"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Machine Learning", "label": "Machine Learning", "shape": "dot", "size": 40, "title": "Machine Learning\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- AI Safety \u0026 Alignment\n- Benchmarking (SOTA)\n- Deep Learning\n- Industrialiser les mod\u00e8les\n- Maths\n- Model Optimization\n- NLP / Computer Vision\n- Pr\u00e9dire les tendances\n- Statistiques\n- Scikit-Learn"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Causal Inference", "label": "Causal Inference", "shape": "dot", "size": 30, "title": "Causal Inference\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)\n- Statistiques\n- DoWhy\n- A/B Testing\n- ROI / Business Case"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Storytelling", "label": "Storytelling", "shape": "dot", "size": 34, "title": "Storytelling\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Analyser les besoins m\u00e9tier\n- Accompagner le changement et l\u2019adoption\n- PowerPoint\n- Tableau Stories\n- Visualisation de donn\u00e9es\n- Power BI Bookmarks\n- Looker Dashboards"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Stakeholder Management", "label": "Stakeholder Management", "shape": "dot", "size": 28, "title": "Stakeholder Management\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Animer ateliers et recueillir besoins\n- Miro\n- Mural\n- PowerPoint"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Data Governance", "label": "Data Governance", "shape": "dot", "size": 28, "title": "Data Governance\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es\n- Data Modeling\n- Garantir la qualit\u00e9\n- Great Expectations"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Data Security \u0026 Compliance", "label": "Data Security \u0026 Compliance", "shape": "dot", "size": 22, "title": "Data Security \u0026 Compliance\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Data Catalog", "label": "Data Catalog", "shape": "dot", "size": 26, "title": "Data Catalog\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es\n- DataHub\n- Collibra"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Benchmarking (SOTA)", "label": "Benchmarking (SOTA)", "shape": "dot", "size": 24, "title": "Benchmarking (SOTA)\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Machine Learning\n- Concevoir et mener des exp\u00e9riences / benchmarks"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Design of Experiments (DOE)", "label": "Design of Experiments (DOE)", "shape": "dot", "size": 24, "title": "Design of Experiments (DOE)\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)\n- Statistiques"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Evaluation Metrics", "label": "Evaluation Metrics", "shape": "dot", "size": 24, "title": "Evaluation Metrics\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Concevoir et mener des exp\u00e9riences / benchmarks\n- Weights \u0026 Biases"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Data Architecture Framework", "label": "Data Architecture Framework", "shape": "dot", "size": 22, "title": "Data Architecture Framework\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "AI Agents", "label": "AI Agents", "shape": "dot", "size": 24, "title": "AI Agents\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Construire des agents IA autonomes\n- CrewAI"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "M\u00e9thodologie Agile", "label": "M\u00e9thodologie Agile", "shape": "dot", "size": 26, "title": "M\u00e9thodologie Agile\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Coordonner le projet\n- Traduire besoins en exigences / user stories\n- Jira"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Suivi des t\u00e2ches", "label": "Suivi des t\u00e2ches", "shape": "dot", "size": 28, "title": "Suivi des t\u00e2ches\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Coordonner le projet\n- Jira\n- Trello\n- Asana"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Star Schema", "label": "Star Schema", "shape": "dot", "size": 24, "title": "Star Schema\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Data Modeling\n- D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Deep Learning", "label": "Deep Learning", "shape": "dot", "size": 28, "title": "Deep Learning\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Machine Learning\n- D\u00e9velopper de nouvelles m\u00e9thodes / architectures\n- PyTorch\n- TensorFlow"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Data Strategy", "label": "Data Strategy", "shape": "dot", "size": 22, "title": "Data Strategy\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- D\u00e9finir la strat\u00e9gie data et les standards"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "DB Design", "label": "DB Design", "shape": "dot", "size": 22, "title": "DB Design\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Optimization", "label": "Optimization", "shape": "dot", "size": 24, "title": "Optimization\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- D\u00e9velopper de nouvelles m\u00e9thodes / architectures\n- Maths"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Generative Models", "label": "Generative Models", "shape": "dot", "size": 22, "title": "Generative Models\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- D\u00e9velopper de nouvelles m\u00e9thodes / architectures"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Generative AI / LLMs", "label": "Generative AI / LLMs", "shape": "dot", "size": 22, "title": "Generative AI / LLMs\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- D\u00e9velopper des applications IA / GenAI"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "NLP / Computer Vision", "label": "NLP / Computer Vision", "shape": "dot", "size": 24, "title": "NLP / Computer Vision\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- D\u00e9velopper des applications IA / GenAI\n- Machine Learning"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Confidence Intervals", "label": "Confidence Intervals", "shape": "dot", "size": 24, "title": "Confidence Intervals\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Estimer l\u0027incertitude et intervalles de confiance\n- Scipy"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Probability", "label": "Probability", "shape": "dot", "size": 24, "title": "Probability\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Estimer l\u0027incertitude et intervalles de confiance\n- Statistiques"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "ROI / Business Case", "label": "ROI / Business Case", "shape": "dot", "size": 30, "title": "ROI / Business Case\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- \u00c9valuer solutions et mesurer impact / ROI\n- Excel\n- KPI\n- Confluence\n- Causal Inference"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Literature Review", "label": "Literature Review", "shape": "dot", "size": 22, "title": "Literature Review\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Faire de la revue de litt\u00e9rature et du state-of-the-art"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "ArXiv / NeurIPS / ICML", "label": "ArXiv / NeurIPS / ICML", "shape": "dot", "size": 22, "title": "ArXiv / NeurIPS / ICML\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Faire de la revue de litt\u00e9rature et du state-of-the-art"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Fine-tuning / PEFT", "label": "Fine-tuning / PEFT", "shape": "dot", "size": 22, "title": "Fine-tuning / PEFT\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Fine-tuner et adapter des LLMs"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Prompt Engineering", "label": "Prompt Engineering", "shape": "dot", "size": 22, "title": "Prompt Engineering\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Fine-tuner et adapter des LLMs"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Research Methodology", "label": "Research Methodology", "shape": "dot", "size": 22, "title": "Research Methodology\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Formuler des hypoth\u00e8ses et probl\u00e8mes de recherche"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Infrastructure as Code (IaC)", "label": "Infrastructure as Code (IaC)", "shape": "dot", "size": 26, "title": "Infrastructure as Code (IaC)\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- G\u00e9rer l\u0027infrastructure\n- Terraform\n- Ansible"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Hypothesis Testing", "label": "Hypothesis Testing", "shape": "dot", "size": 24, "title": "Hypothesis Testing\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Statistiques\n- R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Retrieval-Augmented Generation", "label": "Retrieval-Augmented Generation", "shape": "dot", "size": 22, "title": "Retrieval-Augmented Generation\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Impl\u00e9menter des syst\u00e8mes RAG"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Maths", "label": "Maths", "shape": "dot", "size": 26, "title": "Maths\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Statistiques\n- Machine Learning\n- Optimization"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Model Optimization", "label": "Model Optimization", "shape": "dot", "size": 26, "title": "Model Optimization\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Machine Learning\n- Optimiser les mod\u00e8les en production (inf\u00e9rence)\n- ONNX"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Research Papers", "label": "Research Papers", "shape": "dot", "size": 24, "title": "Research Papers\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Publier articles, brevets et contribuer \u00e0 la communaut\u00e9\n- ArXiv"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "ArXiv", "label": "ArXiv", "shape": "dot", "size": 22, "title": "ArXiv\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Research Papers"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "User Stories", "label": "User Stories", "shape": "dot", "size": 26, "title": "User Stories\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Traduire besoins en exigences / user stories\n- Jira\n- Confluence"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Business Requirements Translation", "label": "Business Requirements Translation", "shape": "dot", "size": 26, "title": "Business Requirements Translation\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Traduire les besoins m\u00e9tier en architecture data\n- Jira\n- Miro"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Metadata Management", "label": "Metadata Management", "shape": "dot", "size": 28, "title": "Metadata Management\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Traduire les besoins m\u00e9tier en architecture data\n- dbt Docs\n- DataHub\n- Gouvernance des donn\u00e9es"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Statistical Modeling", "label": "Statistical Modeling", "shape": "dot", "size": 22, "title": "Statistical Modeling\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Valider et interpr\u00e9ter les mod\u00e8les statistiques"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Regression / GLM", "label": "Regression / GLM", "shape": "dot", "size": 26, "title": "Regression / GLM\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Valider et interpr\u00e9ter les mod\u00e8les statistiques\n- Scikit-Learn\n- R"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Time Series", "label": "Time Series", "shape": "dot", "size": 26, "title": "Time Series\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Valider et interpr\u00e9ter les mod\u00e8les statistiques\n- Prophet\n- Statsmodels"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Gestion de version (Git)", "label": "Gestion de version (Git)", "shape": "dot", "size": 24, "title": "Gestion de version (Git)\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Versionner le code\n- Git"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Great Expectations", "label": "Great Expectations", "shape": "dot", "size": 24, "title": "Great Expectations\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es\n- Data Governance"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "GitHub", "label": "GitHub", "shape": "dot", "size": 30, "title": "GitHub\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Coordonner le projet\n- Git\n- GitHub Actions\n- Jira\n- Publier articles, brevets et contribuer \u00e0 la communaut\u00e9"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Git", "label": "Git", "shape": "dot", "size": 24, "title": "Git\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Gestion de version (Git)\n- GitHub"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "LlamaIndex", "label": "LlamaIndex", "shape": "dot", "size": 22, "title": "LlamaIndex\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Impl\u00e9menter des syst\u00e8mes RAG"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Ansible", "label": "Ansible", "shape": "dot", "size": 22, "title": "Ansible\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Infrastructure as Code (IaC)"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "Jira", "label": "Jira", "shape": "dot", "size": 34, "title": "Jira\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- GitHub\n- M\u00e9thodologie Agile\n- Suivi des t\u00e2ches\n- Traduire les besoins m\u00e9tier en architecture data\n- User Stories\n- Change Management\n- Business Requirements Translation"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Power BI", "label": "Power BI", "shape": "dot", "size": 28, "title": "Power BI\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- KPI\n- Power Query\n- Power BI Bookmarks\n- Reporting"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Tableau", "label": "Tableau", "shape": "dot", "size": 26, "title": "Tableau\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- KPI\n- Tableau Stories\n- Reporting"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Looker", "label": "Looker", "shape": "dot", "size": 24, "title": "Looker\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- KPI\n- Looker Dashboards"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Power Query", "label": "Power Query", "shape": "dot", "size": 26, "title": "Power Query\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Nettoyage de donn\u00e9es\n- Excel\n- Power BI"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Miro", "label": "Miro", "shape": "dot", "size": 24, "title": "Miro\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Stakeholder Management\n- Business Requirements Translation"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Mural", "label": "Mural", "shape": "dot", "size": 22, "title": "Mural\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Stakeholder Management"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Trello", "label": "Trello", "shape": "dot", "size": 22, "title": "Trello\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Suivi des t\u00e2ches"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Asana", "label": "Asana", "shape": "dot", "size": 22, "title": "Asana\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Suivi des t\u00e2ches"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Visualisation de donn\u00e9es", "label": "Visualisation de donn\u00e9es", "shape": "dot", "size": 34, "title": "Visualisation de donn\u00e9es\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- EDA (Analyse Exploratoire)\n- Matplotlib\n- Seaborn\n- Plotly\n- Plots.jl\n- Makie.jl\n- Storytelling"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Manipulation de donn\u00e9es", "label": "Manipulation de donn\u00e9es", "shape": "dot", "size": 28, "title": "Manipulation de donn\u00e9es\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- EDA (Analyse Exploratoire)\n- Pandas\n- Polars\n- DataFrames.jl"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Pandas", "label": "Pandas", "shape": "dot", "size": 24, "title": "Pandas\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Manipulation de donn\u00e9es\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Polars", "label": "Polars", "shape": "dot", "size": 24, "title": "Polars\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Manipulation de donn\u00e9es\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Matplotlib", "label": "Matplotlib", "shape": "dot", "size": 24, "title": "Matplotlib\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Visualisation de donn\u00e9es\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Seaborn", "label": "Seaborn", "shape": "dot", "size": 24, "title": "Seaborn\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Visualisation de donn\u00e9es\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Plotly", "label": "Plotly", "shape": "dot", "size": 24, "title": "Plotly\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Visualisation de donn\u00e9es\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Scipy", "label": "Scipy", "shape": "dot", "size": 28, "title": "Scipy\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Statistiques\n- Python\n- Confidence Intervals\n- A/B Testing"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Jupyter", "label": "Jupyter", "shape": "dot", "size": 28, "title": "Jupyter\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Explorer les donn\u00e9es\n- Markdown\n- Python\n- R"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Spark", "label": "Spark", "shape": "dot", "size": 28, "title": "Spark\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Acqu\u00e9rir les donn\u00e9es\n- Industrialiser les mod\u00e8les\n- Python\n- Scala"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "Scala", "label": "Scala", "shape": "dot", "size": 24, "title": "Scala\nCat\u00e9gorie : Language\n\nConnexions :\n- Spark\n- Java"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Documentation", "label": "Documentation", "shape": "dot", "size": 30, "title": "Documentation\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Coordonner le projet\n- MkDocs\n- ReadMe\n- Change Management\n- Confluence"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Tests \u0026 Qualit\u00e9", "label": "Tests \u0026 Qualit\u00e9", "shape": "dot", "size": 24, "title": "Tests \u0026 Qualit\u00e9\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Coordonner le projet\n- Pytest"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Changelog", "label": "Changelog", "shape": "dot", "size": 24, "title": "Changelog\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Coordonner le projet\n- Keep a Changelog"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Pytest", "label": "Pytest", "shape": "dot", "size": 24, "title": "Pytest\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Tests \u0026 Qualit\u00e9\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "MkDocs", "label": "MkDocs", "shape": "dot", "size": 24, "title": "MkDocs\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Documentation\n- Markdown"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "ReadMe", "label": "ReadMe", "shape": "dot", "size": 24, "title": "ReadMe\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Documentation\n- Markdown"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Keep a Changelog", "label": "Keep a Changelog", "shape": "dot", "size": 22, "title": "Keep a Changelog\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Changelog"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "Markdown", "label": "Markdown", "shape": "dot", "size": 26, "title": "Markdown\nCat\u00e9gorie : Language\n\nConnexions :\n- ReadMe\n- MkDocs\n- Jupyter"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "DataFrames.jl", "label": "DataFrames.jl", "shape": "dot", "size": 24, "title": "DataFrames.jl\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Manipulation de donn\u00e9es\n- Julia"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Plots.jl", "label": "Plots.jl", "shape": "dot", "size": 24, "title": "Plots.jl\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Visualisation de donn\u00e9es\n- Julia"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Makie.jl", "label": "Makie.jl", "shape": "dot", "size": 24, "title": "Makie.jl\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Visualisation de donn\u00e9es\n- Julia"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "StatsModels.jl", "label": "StatsModels.jl", "shape": "dot", "size": 24, "title": "StatsModels.jl\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Statistiques\n- Julia"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "MLJ.jl", "label": "MLJ.jl", "shape": "dot", "size": 24, "title": "MLJ.jl\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Pr\u00e9dire les tendances\n- Julia"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "Julia", "label": "Julia", "shape": "dot", "size": 30, "title": "Julia\nCat\u00e9gorie : Language\n\nConnexions :\n- DataFrames.jl\n- Plots.jl\n- Makie.jl\n- StatsModels.jl\n- MLJ.jl"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "\u00c9valuer la performance", "label": "\u00c9valuer la performance", "shape": "dot", "size": 24, "title": "\u00c9valuer la performance\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Valider et interpr\u00e9ter les mod\u00e8les statistiques\n- Scikit-Learn"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Interpr\u00e9tabilit\u00e9", "label": "Interpr\u00e9tabilit\u00e9", "shape": "dot", "size": 26, "title": "Interpr\u00e9tabilit\u00e9\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Valider et interpr\u00e9ter les mod\u00e8les statistiques\n- SHAP\n- LIME"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "SHAP", "label": "SHAP", "shape": "dot", "size": 24, "title": "SHAP\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Interpr\u00e9tabilit\u00e9\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "LIME", "label": "LIME", "shape": "dot", "size": 24, "title": "LIME\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Interpr\u00e9tabilit\u00e9\n- Python"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Statsmodels", "label": "Statsmodels", "shape": "dot", "size": 28, "title": "Statsmodels\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- A/B Testing\n- Python\n- Statistiques\n- Time Series"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Confluence", "label": "Confluence", "shape": "dot", "size": 28, "title": "Confluence\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Change Management\n- Documentation\n- ROI / Business Case\n- User Stories"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "PowerPoint", "label": "PowerPoint", "shape": "dot", "size": 24, "title": "PowerPoint\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Storytelling\n- Stakeholder Management"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Tableau Stories", "label": "Tableau Stories", "shape": "dot", "size": 24, "title": "Tableau Stories\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Storytelling\n- Tableau"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Power BI Bookmarks", "label": "Power BI Bookmarks", "shape": "dot", "size": 24, "title": "Power BI Bookmarks\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Storytelling\n- Power BI"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Looker Dashboards", "label": "Looker Dashboards", "shape": "dot", "size": 24, "title": "Looker Dashboards\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Storytelling\n- Looker"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "DoWhy", "label": "DoWhy", "shape": "dot", "size": 24, "title": "DoWhy\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Causal Inference\n- Python"}, {"category": "DataOps/ETL", "color": "#2F4F4F", "font": {"color": "white"}, "id": "dbt Docs", "label": "dbt Docs", "shape": "dot", "size": 22, "title": "dbt Docs\nCat\u00e9gorie : DataOps/ETL\n\nConnexions :\n- Metadata Management"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "DataHub", "label": "DataHub", "shape": "dot", "size": 24, "title": "DataHub\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Metadata Management\n- Data Catalog"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Gouvernance des donn\u00e9es", "label": "Gouvernance des donn\u00e9es", "shape": "dot", "size": 24, "title": "Gouvernance des donn\u00e9es\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Metadata Management\n- Collibra"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Prophet", "label": "Prophet", "shape": "dot", "size": 28, "title": "Prophet\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Time Series\n- Python\n- R\n- Stan"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "SAS", "label": "SAS", "shape": "dot", "size": 26, "title": "SAS\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Statistiques\n- SQL\n- Reporting"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "SPSS", "label": "SPSS", "shape": "dot", "size": 24, "title": "SPSS\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Statistiques\n- Reporting"}, {"category": "Theory/Math", "color": "#E5D5B5", "font": {"color": "white"}, "id": "Reporting", "label": "Reporting", "shape": "dot", "size": 34, "title": "Reporting\nCat\u00e9gorie : Theory/Math\n\nConnexions :\n- Explorer les donn\u00e9es\n- KPI\n- Tableau\n- Power BI\n- Excel\n- SAS\n- SPSS"}, {"category": "Tool/BI", "color": "#ffcc00", "font": {"color": "white"}, "id": "Collibra", "label": "Collibra", "shape": "dot", "size": 24, "title": "Collibra\nCat\u00e9gorie : Tool/BI\n\nConnexions :\n- Data Catalog\n- Gouvernance des donn\u00e9es"}, {"category": "Language", "color": "#228B22", "font": {"color": "white"}, "id": "Stan", "label": "Stan", "shape": "dot", "size": 22, "title": "Stan\nCat\u00e9gorie : Language\n\nConnexions :\n- Prophet"}]);
+                  edges = new vis.DataSet([{"color": "#444444", "from": "Cloud Strategy", "to": "AWS / Azure / GCP"}, {"color": "#444444", "from": "Cloud Strategy", "to": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global"}, {"color": "#444444", "from": "AWS / Azure / GCP", "to": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global"}, {"color": "#444444", "from": "AWS / Azure / GCP", "to": "Terraform"}, {"color": "#444444", "from": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global", "to": "Snowflake"}, {"color": "#444444", "from": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global", "to": "Data Architect"}, {"color": "#444444", "from": "Concevoir l\u0027\u00e9cosyst\u00e8me de donn\u00e9es global", "to": "Data Architecture Framework"}, {"color": "#444444", "from": "Snowflake", "to": "dbt"}, {"color": "#444444", "from": "Snowflake", "to": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)"}, {"color": "#444444", "from": "Snowflake", "to": "Nettoyage de donn\u00e9es"}, {"color": "#444444", "from": "Snowflake", "to": "Terraform"}, {"color": "#444444", "from": "dbt", "to": "Dagster"}, {"color": "#444444", "from": "dbt", "to": "D\u00e9finir la strat\u00e9gie data et les standards"}, {"color": "#444444", "from": "dbt", "to": "ELT"}, {"color": "#444444", "from": "dbt", "to": "SQL"}, {"color": "#444444", "from": "dbt", "to": "Python"}, {"color": "#444444", "from": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)", "to": "Data Architect"}, {"color": "#444444", "from": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)", "to": "Data Modeling"}, {"color": "#444444", "from": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)", "to": "DB Design"}, {"color": "#444444", "from": "D\u00e9finir les mod\u00e8les de donn\u00e9es (conceptuel, logique, physique)", "to": "Star Schema"}, {"color": "#444444", "from": "Nettoyage de donn\u00e9es", "to": "SQL"}, {"color": "#444444", "from": "Nettoyage de donn\u00e9es", "to": "Pr\u00e9parer les donn\u00e9es"}, {"color": "#444444", "from": "Nettoyage de donn\u00e9es", "to": "Power Query"}, {"color": "#444444", "from": "Terraform", "to": "GitHub Actions"}, {"color": "#444444", "from": "Terraform", "to": "Infrastructure as Code (IaC)"}, {"color": "#444444", "from": "Acqu\u00e9rir les donn\u00e9es", "to": "ETL / ELT"}, {"color": "#444444", "from": "Acqu\u00e9rir les donn\u00e9es", "to": "API \u0026 Scraping"}, {"color": "#444444", "from": "Acqu\u00e9rir les donn\u00e9es", "to": "Flux de donn\u00e9es (Streams)"}, {"color": "#444444", "from": "Acqu\u00e9rir les donn\u00e9es", "to": "Data Analyst"}, {"color": "#444444", "from": "Acqu\u00e9rir les donn\u00e9es", "to": "Data Engineer"}, {"color": "#444444", "from": "Acqu\u00e9rir les donn\u00e9es", "to": "Data Scientist"}, {"color": "#444444", "from": "Acqu\u00e9rir les donn\u00e9es", "to": "Spark"}, {"color": "#444444", "from": "ETL / ELT", "to": "ETL"}, {"color": "#444444", "from": "ETL / ELT", "to": "ELT"}, {"color": "#444444", "from": "ETL / ELT", "to": "Pr\u00e9parer les donn\u00e9es"}, {"color": "#444444", "from": "API \u0026 Scraping", "to": "Requests"}, {"color": "#444444", "from": "API \u0026 Scraping", "to": "BeautifulSoup"}, {"color": "#444444", "from": "API \u0026 Scraping", "to": "Selenium"}, {"color": "#444444", "from": "Flux de donn\u00e9es (Streams)", "to": "Kafka"}, {"color": "#444444", "from": "Automatiser les d\u00e9ploiements", "to": "CI/CD"}, {"color": "#444444", "from": "Automatiser les d\u00e9ploiements", "to": "Data Engineer"}, {"color": "#444444", "from": "Automatiser les d\u00e9ploiements", "to": "ML Engineer"}, {"color": "#444444", "from": "CI/CD", "to": "GitHub Actions"}, {"color": "#444444", "from": "CI/CD", "to": "Groovy"}, {"color": "#444444", "from": "CI/CD", "to": "Jenkins"}, {"color": "#444444", "from": "GitHub Actions", "to": "Industrialiser les mod\u00e8les"}, {"color": "#444444", "from": "GitHub Actions", "to": "GitHub"}, {"color": "#444444", "from": "Construire des pipelines", "to": "Orchestration"}, {"color": "#444444", "from": "Construire des pipelines", "to": "Data Engineer"}, {"color": "#444444", "from": "Orchestration", "to": "Airflow"}, {"color": "#444444", "from": "Orchestration", "to": "Dagster"}, {"color": "#444444", "from": "Orchestration", "to": "Prefect"}, {"color": "#444444", "from": "Dagster", "to": "Data Assets (Actifs)"}, {"color": "#444444", "from": "Dagster", "to": "Python"}, {"color": "#444444", "from": "Data Assets (Actifs)", "to": "Orchestrer les flux"}, {"color": "#444444", "from": "D\u00e9finir la strat\u00e9gie data et les standards", "to": "Data Architect"}, {"color": "#444444", "from": "D\u00e9finir la strat\u00e9gie data et les standards", "to": "Data Strategy"}, {"color": "#444444", "from": "D\u00e9ployer des APIs", "to": "Docker / Kubernetes"}, {"color": "#444444", "from": "D\u00e9ployer des APIs", "to": "ML Engineer"}, {"color": "#444444", "from": "D\u00e9ployer des APIs", "to": "FastAPI"}, {"color": "#444444", "from": "Docker / Kubernetes", "to": "Industrialiser les mod\u00e8les"}, {"color": "#444444", "from": "ELT", "to": "Fivetran"}, {"color": "#444444", "from": "ELT", "to": "Airbyte"}, {"color": "#444444", "from": "ETL", "to": "Talend"}, {"color": "#444444", "from": "ETL", "to": "Informatica PowerCenter"}, {"color": "#444444", "from": "Industrialiser les mod\u00e8les", "to": "GitLab CI"}, {"color": "#444444", "from": "Industrialiser les mod\u00e8les", "to": "ML Engineer"}, {"color": "#444444", "from": "Industrialiser les mod\u00e8les", "to": "Machine Learning"}, {"color": "#444444", "from": "Industrialiser les mod\u00e8les", "to": "FastAPI"}, {"color": "#444444", "from": "Industrialiser les mod\u00e8les", "to": "Flask"}, {"color": "#444444", "from": "Industrialiser les mod\u00e8les", "to": "MLflow"}, {"color": "#444444", "from": "Industrialiser les mod\u00e8les", "to": "Spark"}, {"color": "#444444", "from": "Pr\u00e9parer les donn\u00e9es", "to": "Data Analyst"}, {"color": "#444444", "from": "Pr\u00e9parer les donn\u00e9es", "to": "Data Scientist"}, {"color": "#444444", "from": "AI Engineer", "to": "D\u00e9velopper des applications IA / GenAI"}, {"color": "#444444", "from": "AI Engineer", "to": "Impl\u00e9menter des syst\u00e8mes RAG"}, {"color": "#444444", "from": "AI Engineer", "to": "Construire des agents IA autonomes"}, {"color": "#444444", "from": "AI Engineer", "to": "Optimiser les mod\u00e8les en production (inf\u00e9rence)"}, {"color": "#444444", "from": "AI Engineer", "to": "Mettre en place monitoring \u0026 safety (guardrails)"}, {"color": "#444444", "from": "AI Engineer", "to": "Fine-tuner et adapter des LLMs"}, {"color": "#444444", "from": "D\u00e9velopper des applications IA / GenAI", "to": "Generative AI / LLMs"}, {"color": "#444444", "from": "D\u00e9velopper des applications IA / GenAI", "to": "NLP / Computer Vision"}, {"color": "#444444", "from": "D\u00e9velopper des applications IA / GenAI", "to": "LangChain"}, {"color": "#444444", "from": "Impl\u00e9menter des syst\u00e8mes RAG", "to": "Retrieval-Augmented Generation"}, {"color": "#444444", "from": "Impl\u00e9menter des syst\u00e8mes RAG", "to": "LangChain"}, {"color": "#444444", "from": "Impl\u00e9menter des syst\u00e8mes RAG", "to": "LlamaIndex"}, {"color": "#444444", "from": "Construire des agents IA autonomes", "to": "AI Agents"}, {"color": "#444444", "from": "Construire des agents IA autonomes", "to": "LangChain"}, {"color": "#444444", "from": "Optimiser les mod\u00e8les en production (inf\u00e9rence)", "to": "Model Optimization"}, {"color": "#444444", "from": "Mettre en place monitoring \u0026 safety (guardrails)", "to": "AI Safety \u0026 Alignment"}, {"color": "#444444", "from": "Mettre en place monitoring \u0026 safety (guardrails)", "to": "Evidently AI"}, {"color": "#444444", "from": "Fine-tuner et adapter des LLMs", "to": "Fine-tuning / PEFT"}, {"color": "#444444", "from": "Fine-tuner et adapter des LLMs", "to": "Prompt Engineering"}, {"color": "#444444", "from": "Fine-tuner et adapter des LLMs", "to": "Hugging Face"}, {"color": "#444444", "from": "Business Analyst", "to": "Analyser les besoins m\u00e9tier"}, {"color": "#444444", "from": "Business Analyst", "to": "Traduire besoins en exigences / user stories"}, {"color": "#444444", "from": "Business Analyst", "to": "Animer ateliers et recueillir besoins"}, {"color": "#444444", "from": "Business Analyst", "to": "\u00c9valuer solutions et mesurer impact / ROI"}, {"color": "#444444", "from": "Business Analyst", "to": "Accompagner le changement et l\u2019adoption"}, {"color": "#444444", "from": "Analyser les besoins m\u00e9tier", "to": "Storytelling"}, {"color": "#444444", "from": "Analyser les besoins m\u00e9tier", "to": "Excel"}, {"color": "#444444", "from": "Traduire besoins en exigences / user stories", "to": "User Stories"}, {"color": "#444444", "from": "Traduire besoins en exigences / user stories", "to": "M\u00e9thodologie Agile"}, {"color": "#444444", "from": "Animer ateliers et recueillir besoins", "to": "Stakeholder Management"}, {"color": "#444444", "from": "\u00c9valuer solutions et mesurer impact / ROI", "to": "KPI"}, {"color": "#444444", "from": "\u00c9valuer solutions et mesurer impact / ROI", "to": "ROI / Business Case"}, {"color": "#444444", "from": "Accompagner le changement et l\u2019adoption", "to": "Change Management"}, {"color": "#444444", "from": "Accompagner le changement et l\u2019adoption", "to": "Storytelling"}, {"color": "#444444", "from": "Data Analyst", "to": "Explorer les donn\u00e9es"}, {"color": "#444444", "from": "Data Analyst", "to": "Piloter la performance"}, {"color": "#444444", "from": "Data Analyst", "to": "Coordonner le projet"}, {"color": "#444444", "from": "Explorer les donn\u00e9es", "to": "Data Scientist"}, {"color": "#444444", "from": "Explorer les donn\u00e9es", "to": "EDA (Analyse Exploratoire)"}, {"color": "#444444", "from": "Explorer les donn\u00e9es", "to": "Jupyter"}, {"color": "#444444", "from": "Explorer les donn\u00e9es", "to": "Reporting"}, {"color": "#444444", "from": "Piloter la performance", "to": "KPI"}, {"color": "#444444", "from": "Piloter la performance", "to": "Statistiques"}, {"color": "#444444", "from": "Coordonner le projet", "to": "Data Engineer"}, {"color": "#444444", "from": "Coordonner le projet", "to": "Data Scientist"}, {"color": "#444444", "from": "Coordonner le projet", "to": "ML Engineer"}, {"color": "#444444", "from": "Coordonner le projet", "to": "M\u00e9thodologie Agile"}, {"color": "#444444", "from": "Coordonner le projet", "to": "Suivi des t\u00e2ches"}, {"color": "#444444", "from": "Coordonner le projet", "to": "GitHub"}, {"color": "#444444", "from": "Coordonner le projet", "to": "Documentation"}, {"color": "#444444", "from": "Coordonner le projet", "to": "Tests \u0026 Qualit\u00e9"}, {"color": "#444444", "from": "Coordonner le projet", "to": "Changelog"}, {"color": "#444444", "from": "Data Architect", "to": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es"}, {"color": "#444444", "from": "Data Architect", "to": "Traduire les besoins m\u00e9tier en architecture data"}, {"color": "#444444", "from": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es", "to": "Data Governance"}, {"color": "#444444", "from": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es", "to": "Data Security \u0026 Compliance"}, {"color": "#444444", "from": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es", "to": "Data Catalog"}, {"color": "#444444", "from": "Assurer la gouvernance, s\u00e9curit\u00e9 et conformit\u00e9 des donn\u00e9es", "to": "Great Expectations"}, {"color": "#444444", "from": "Traduire les besoins m\u00e9tier en architecture data", "to": "Business Requirements Translation"}, {"color": "#444444", "from": "Traduire les besoins m\u00e9tier en architecture data", "to": "Metadata Management"}, {"color": "#444444", "from": "Traduire les besoins m\u00e9tier en architecture data", "to": "Jira"}, {"color": "#444444", "from": "Data Engineer", "to": "Mod\u00e9liser l\u0027architecture"}, {"color": "#444444", "from": "Data Engineer", "to": "Garantir la qualit\u00e9"}, {"color": "#444444", "from": "Data Engineer", "to": "Orchestrer les flux"}, {"color": "#444444", "from": "Data Engineer", "to": "G\u00e9rer l\u0027infrastructure"}, {"color": "#444444", "from": "Mod\u00e9liser l\u0027architecture", "to": "Data Modeling"}, {"color": "#444444", "from": "Garantir la qualit\u00e9", "to": "Data Governance"}, {"color": "#444444", "from": "Orchestrer les flux", "to": "ML Engineer"}, {"color": "#444444", "from": "G\u00e9rer l\u0027infrastructure", "to": "ML Engineer"}, {"color": "#444444", "from": "G\u00e9rer l\u0027infrastructure", "to": "Infrastructure as Code (IaC)"}, {"color": "#444444", "from": "Data Scientist", "to": "Pr\u00e9dire les tendances"}, {"color": "#444444", "from": "Data Scientist", "to": "Versionner le code"}, {"color": "#444444", "from": "Data Scientist", "to": "Valider les mod\u00e8les"}, {"color": "#444444", "from": "Pr\u00e9dire les tendances", "to": "Machine Learning"}, {"color": "#444444", "from": "Pr\u00e9dire les tendances", "to": "MLJ.jl"}, {"color": "#444444", "from": "Versionner le code", "to": "Gestion de version (Git)"}, {"color": "#444444", "from": "Valider les mod\u00e8les", "to": "Statistiques"}, {"color": "#444444", "from": "Research Scientist", "to": "Formuler des hypoth\u00e8ses et probl\u00e8mes de recherche"}, {"color": "#444444", "from": "Research Scientist", "to": "Concevoir et mener des exp\u00e9riences / benchmarks"}, {"color": "#444444", "from": "Research Scientist", "to": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures"}, {"color": "#444444", "from": "Research Scientist", "to": "Publier articles, brevets et contribuer \u00e0 la communaut\u00e9"}, {"color": "#444444", "from": "Research Scientist", "to": "Faire de la revue de litt\u00e9rature et du state-of-the-art"}, {"color": "#444444", "from": "Formuler des hypoth\u00e8ses et probl\u00e8mes de recherche", "to": "Research Methodology"}, {"color": "#444444", "from": "Concevoir et mener des exp\u00e9riences / benchmarks", "to": "Benchmarking (SOTA)"}, {"color": "#444444", "from": "Concevoir et mener des exp\u00e9riences / benchmarks", "to": "Evaluation Metrics"}, {"color": "#444444", "from": "Concevoir et mener des exp\u00e9riences / benchmarks", "to": "MLflow"}, {"color": "#444444", "from": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures", "to": "Optimization"}, {"color": "#444444", "from": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures", "to": "Deep Learning"}, {"color": "#444444", "from": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures", "to": "Generative Models"}, {"color": "#444444", "from": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures", "to": "PyTorch"}, {"color": "#444444", "from": "D\u00e9velopper de nouvelles m\u00e9thodes / architectures", "to": "Hugging Face"}, {"color": "#444444", "from": "Publier articles, brevets et contribuer \u00e0 la communaut\u00e9", "to": "Research Papers"}, {"color": "#444444", "from": "Publier articles, brevets et contribuer \u00e0 la communaut\u00e9", "to": "GitHub"}, {"color": "#444444", "from": "Faire de la revue de litt\u00e9rature et du state-of-the-art", "to": "Literature Review"}, {"color": "#444444", "from": "Faire de la revue de litt\u00e9rature et du state-of-the-art", "to": "ArXiv / NeurIPS / ICML"}, {"color": "#444444", "from": "Statistician", "to": "Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)"}, {"color": "#444444", "from": "Statistician", "to": "R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles"}, {"color": "#444444", "from": "Statistician", "to": "Estimer l\u0027incertitude et intervalles de confiance"}, {"color": "#444444", "from": "Statistician", "to": "Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)"}, {"color": "#444444", "from": "Statistician", "to": "Valider et interpr\u00e9ter les mod\u00e8les statistiques"}, {"color": "#444444", "from": "Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)", "to": "R"}, {"color": "#444444", "from": "Concevoir des \u00e9tudes et plans d\u0027exp\u00e9rience (DOE)", "to": "Design of Experiments (DOE)"}, {"color": "#444444", "from": "R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles", "to": "R"}, {"color": "#444444", "from": "R\u00e9aliser des tests d\u0027hypoth\u00e8se et analyses inf\u00e9rentielles", "to": "Hypothesis Testing"}, {"color": "#444444", "from": "Estimer l\u0027incertitude et intervalles de confiance", "to": "Confidence Intervals"}, {"color": "#444444", "from": "Estimer l\u0027incertitude et intervalles de confiance", "to": "Probability"}, {"color": "#444444", "from": "Estimer l\u0027incertitude et intervalles de confiance", "to": "Statistiques"}, {"color": "#444444", "from": "Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)", "to": "Causal Inference"}, {"color": "#444444", "from": "Analyser la causalit\u00e9 et effets (A/B tests, inf\u00e9rence causale)", "to": "A/B Testing"}, {"color": "#444444", "from": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "to": "R"}, {"color": "#444444", "from": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "to": "Statistical Modeling"}, {"color": "#444444", "from": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "to": "Regression / GLM"}, {"color": "#444444", "from": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "to": "Time Series"}, {"color": "#444444", "from": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "to": "\u00c9valuer la performance"}, {"color": "#444444", "from": "Valider et interpr\u00e9ter les mod\u00e8les statistiques", "to": "Interpr\u00e9tabilit\u00e9"}, {"color": "#444444", "from": "Statistiques", "to": "R"}, {"color": "#444444", "from": "Statistiques", "to": "Causal Inference"}, {"color": "#444444", "from": "Statistiques", "to": "Design of Experiments (DOE)"}, {"color": "#444444", "from": "Statistiques", "to": "Hypothesis Testing"}, {"color": "#444444", "from": "Statistiques", "to": "Maths"}, {"color": "#444444", "from": "Statistiques", "to": "Python"}, {"color": "#444444", "from": "Statistiques", "to": "Machine Learning"}, {"color": "#444444", "from": "Statistiques", "to": "EDA (Analyse Exploratoire)"}, {"color": "#444444", "from": "Statistiques", "to": "Scipy"}, {"color": "#444444", "from": "Statistiques", "to": "StatsModels.jl"}, {"color": "#444444", "from": "Statistiques", "to": "Probability"}, {"color": "#444444", "from": "Statistiques", "to": "Statsmodels"}, {"color": "#444444", "from": "Statistiques", "to": "SAS"}, {"color": "#444444", "from": "Statistiques", "to": "SPSS"}, {"color": "#444444", "from": "BeautifulSoup", "to": "Python"}, {"color": "#444444", "from": "Python", "to": "CrewAI"}, {"color": "#444444", "from": "Python", "to": "Evidently AI"}, {"color": "#444444", "from": "Python", "to": "FastAPI"}, {"color": "#444444", "from": "Python", "to": "Flask"}, {"color": "#444444", "from": "Python", "to": "Hugging Face"}, {"color": "#444444", "from": "Python", "to": "LangChain"}, {"color": "#444444", "from": "Python", "to": "MLflow"}, {"color": "#444444", "from": "Python", "to": "ONNX"}, {"color": "#444444", "from": "Python", "to": "PyTorch"}, {"color": "#444444", "from": "Python", "to": "Requests"}, {"color": "#444444", "from": "Python", "to": "Scikit-Learn"}, {"color": "#444444", "from": "Python", "to": "Selenium"}, {"color": "#444444", "from": "Python", "to": "TensorFlow"}, {"color": "#444444", "from": "Python", "to": "Weights \u0026 Biases"}, {"color": "#444444", "from": "Python", "to": "Pandas"}, {"color": "#444444", "from": "Python", "to": "Polars"}, {"color": "#444444", "from": "Python", "to": "Matplotlib"}, {"color": "#444444", "from": "Python", "to": "Seaborn"}, {"color": "#444444", "from": "Python", "to": "Plotly"}, {"color": "#444444", "from": "Python", "to": "Scipy"}, {"color": "#444444", "from": "Python", "to": "Spark"}, {"color": "#444444", "from": "Python", "to": "Pytest"}, {"color": "#444444", "from": "Python", "to": "Jupyter"}, {"color": "#444444", "from": "Python", "to": "SHAP"}, {"color": "#444444", "from": "Python", "to": "LIME"}, {"color": "#444444", "from": "Python", "to": "Statsmodels"}, {"color": "#444444", "from": "Python", "to": "DoWhy"}, {"color": "#444444", "from": "Python", "to": "Prophet"}, {"color": "#444444", "from": "Groovy", "to": "Java"}, {"color": "#444444", "from": "Groovy", "to": "Jenkins"}, {"color": "#444444", "from": "R", "to": "Jupyter"}, {"color": "#444444", "from": "R", "to": "Regression / GLM"}, {"color": "#444444", "from": "R", "to": "Prophet"}, {"color": "#444444", "from": "CrewAI", "to": "AI Agents"}, {"color": "#444444", "from": "Data Modeling", "to": "SQL"}, {"color": "#444444", "from": "Data Modeling", "to": "Star Schema"}, {"color": "#444444", "from": "Data Modeling", "to": "Data Governance"}, {"color": "#444444", "from": "SQL", "to": "EDA (Analyse Exploratoire)"}, {"color": "#444444", "from": "SQL", "to": "Excel"}, {"color": "#444444", "from": "SQL", "to": "SAS"}, {"color": "#444444", "from": "EDA (Analyse Exploratoire)", "to": "Visualisation de donn\u00e9es"}, {"color": "#444444", "from": "EDA (Analyse Exploratoire)", "to": "Manipulation de donn\u00e9es"}, {"color": "#444444", "from": "Excel", "to": "Power Query"}, {"color": "#444444", "from": "Excel", "to": "ROI / Business Case"}, {"color": "#444444", "from": "Excel", "to": "Reporting"}, {"color": "#444444", "from": "Java", "to": "Scala"}, {"color": "#444444", "from": "ONNX", "to": "Model Optimization"}, {"color": "#444444", "from": "PyTorch", "to": "Deep Learning"}, {"color": "#444444", "from": "Scikit-Learn", "to": "Machine Learning"}, {"color": "#444444", "from": "Scikit-Learn", "to": "\u00c9valuer la performance"}, {"color": "#444444", "from": "Scikit-Learn", "to": "Regression / GLM"}, {"color": "#444444", "from": "TensorFlow", "to": "Deep Learning"}, {"color": "#444444", "from": "Weights \u0026 Biases", "to": "Evaluation Metrics"}, {"color": "#444444", "from": "A/B Testing", "to": "KPI"}, {"color": "#444444", "from": "A/B Testing", "to": "Scipy"}, {"color": "#444444", "from": "A/B Testing", "to": "Statsmodels"}, {"color": "#444444", "from": "A/B Testing", "to": "Causal Inference"}, {"color": "#444444", "from": "KPI", "to": "Power BI"}, {"color": "#444444", "from": "KPI", "to": "Tableau"}, {"color": "#444444", "from": "KPI", "to": "Looker"}, {"color": "#444444", "from": "KPI", "to": "ROI / Business Case"}, {"color": "#444444", "from": "KPI", "to": "Reporting"}, {"color": "#444444", "from": "Change Management", "to": "Confluence"}, {"color": "#444444", "from": "Change Management", "to": "Jira"}, {"color": "#444444", "from": "Change Management", "to": "Documentation"}, {"color": "#444444", "from": "AI Safety \u0026 Alignment", "to": "Machine Learning"}, {"color": "#444444", "from": "Machine Learning", "to": "Benchmarking (SOTA)"}, {"color": "#444444", "from": "Machine Learning", "to": "Deep Learning"}, {"color": "#444444", "from": "Machine Learning", "to": "Maths"}, {"color": "#444444", "from": "Machine Learning", "to": "Model Optimization"}, {"color": "#444444", "from": "Machine Learning", "to": "NLP / Computer Vision"}, {"color": "#444444", "from": "Causal Inference", "to": "DoWhy"}, {"color": "#444444", "from": "Causal Inference", "to": "ROI / Business Case"}, {"color": "#444444", "from": "Storytelling", "to": "PowerPoint"}, {"color": "#444444", "from": "Storytelling", "to": "Tableau Stories"}, {"color": "#444444", "from": "Storytelling", "to": "Visualisation de donn\u00e9es"}, {"color": "#444444", "from": "Storytelling", "to": "Power BI Bookmarks"}, {"color": "#444444", "from": "Storytelling", "to": "Looker Dashboards"}, {"color": "#444444", "from": "Stakeholder Management", "to": "Miro"}, {"color": "#444444", "from": "Stakeholder Management", "to": "Mural"}, {"color": "#444444", "from": "Stakeholder Management", "to": "PowerPoint"}, {"color": "#444444", "from": "Data Governance", "to": "Great Expectations"}, {"color": "#444444", "from": "Data Catalog", "to": "DataHub"}, {"color": "#444444", "from": "Data Catalog", "to": "Collibra"}, {"color": "#444444", "from": "M\u00e9thodologie Agile", "to": "Jira"}, {"color": "#444444", "from": "Suivi des t\u00e2ches", "to": "Jira"}, {"color": "#444444", "from": "Suivi des t\u00e2ches", "to": "Trello"}, {"color": "#444444", "from": "Suivi des t\u00e2ches", "to": "Asana"}, {"color": "#444444", "from": "Optimization", "to": "Maths"}, {"color": "#444444", "from": "Confidence Intervals", "to": "Scipy"}, {"color": "#444444", "from": "ROI / Business Case", "to": "Confluence"}, {"color": "#444444", "from": "Infrastructure as Code (IaC)", "to": "Ansible"}, {"color": "#444444", "from": "Research Papers", "to": "ArXiv"}, {"color": "#444444", "from": "User Stories", "to": "Jira"}, {"color": "#444444", "from": "User Stories", "to": "Confluence"}, {"color": "#444444", "from": "Business Requirements Translation", "to": "Jira"}, {"color": "#444444", "from": "Business Requirements Translation", "to": "Miro"}, {"color": "#444444", "from": "Metadata Management", "to": "dbt Docs"}, {"color": "#444444", "from": "Metadata Management", "to": "DataHub"}, {"color": "#444444", "from": "Metadata Management", "to": "Gouvernance des donn\u00e9es"}, {"color": "#444444", "from": "Time Series", "to": "Prophet"}, {"color": "#444444", "from": "Time Series", "to": "Statsmodels"}, {"color": "#444444", "from": "Gestion de version (Git)", "to": "Git"}, {"color": "#444444", "from": "GitHub", "to": "Git"}, {"color": "#444444", "from": "GitHub", "to": "Jira"}, {"color": "#444444", "from": "Power BI", "to": "Power Query"}, {"color": "#444444", "from": "Power BI", "to": "Power BI Bookmarks"}, {"color": "#444444", "from": "Power BI", "to": "Reporting"}, {"color": "#444444", "from": "Tableau", "to": "Tableau Stories"}, {"color": "#444444", "from": "Tableau", "to": "Reporting"}, {"color": "#444444", "from": "Looker", "to": "Looker Dashboards"}, {"color": "#444444", "from": "Visualisation de donn\u00e9es", "to": "Matplotlib"}, {"color": "#444444", "from": "Visualisation de donn\u00e9es", "to": "Seaborn"}, {"color": "#444444", "from": "Visualisation de donn\u00e9es", "to": "Plotly"}, {"color": "#444444", "from": "Visualisation de donn\u00e9es", "to": "Plots.jl"}, {"color": "#444444", "from": "Visualisation de donn\u00e9es", "to": "Makie.jl"}, {"color": "#444444", "from": "Manipulation de donn\u00e9es", "to": "Pandas"}, {"color": "#444444", "from": "Manipulation de donn\u00e9es", "to": "Polars"}, {"color": "#444444", "from": "Manipulation de donn\u00e9es", "to": "DataFrames.jl"}, {"color": "#444444", "from": "Jupyter", "to": "Markdown"}, {"color": "#444444", "from": "Spark", "to": "Scala"}, {"color": "#444444", "from": "Documentation", "to": "MkDocs"}, {"color": "#444444", "from": "Documentation", "to": "ReadMe"}, {"color": "#444444", "from": "Documentation", "to": "Confluence"}, {"color": "#444444", "from": "Tests \u0026 Qualit\u00e9", "to": "Pytest"}, {"color": "#444444", "from": "Changelog", "to": "Keep a Changelog"}, {"color": "#444444", "from": "MkDocs", "to": "Markdown"}, {"color": "#444444", "from": "ReadMe", "to": "Markdown"}, {"color": "#444444", "from": "DataFrames.jl", "to": "Julia"}, {"color": "#444444", "from": "Plots.jl", "to": "Julia"}, {"color": "#444444", "from": "Makie.jl", "to": "Julia"}, {"color": "#444444", "from": "StatsModels.jl", "to": "Julia"}, {"color": "#444444", "from": "MLJ.jl", "to": "Julia"}, {"color": "#444444", "from": "Interpr\u00e9tabilit\u00e9", "to": "SHAP"}, {"color": "#444444", "from": "Interpr\u00e9tabilit\u00e9", "to": "LIME"}, {"color": "#444444", "from": "Gouvernance des donn\u00e9es", "to": "Collibra"}, {"color": "#444444", "from": "Prophet", "to": "Stan"}, {"color": "#444444", "from": "SAS", "to": "Reporting"}, {"color": "#444444", "from": "SPSS", "to": "Reporting"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"forceAtlas2Based": {"gravitationConstant": -100, "centralGravity": 0.01, "springLength": 100}, "solver": "forceAtlas2Based", "stabilization": {"enabled": true, "iterations": 1000}}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+<script type="text/javascript">
+
+function getNextLevelNeighbors(nodeIds) {
+    var neighbors = new Set();
+    nodeIds.forEach(id => {
+        network.getConnectedNodes(id).forEach(n => neighbors.add(n));
+    });
+    return Array.from(neighbors);
+}
+
+function applyFilters() {
+    var roleId = document.getElementById('roleFilter').value;
+    var catName = document.getElementById('catFilter').value;
+    var allNodes = nodes.get();
+    
+    if (roleId !== 'all') {
+        var level1 = network.getConnectedNodes(roleId);
+        var potentialL2 = getNextLevelNeighbors(level1);
+        var level2 = potentialL2.filter(id => {
+            var n = nodes.get(id);
+            return n && (n.category === "Theory/Math" || n.category === "DataOps/ETL");
+        });
+        var potentialL3 = getNextLevelNeighbors(level2);
+        var level3 = potentialL3.filter(id => {
+            var n = nodes.get(id);
+            return n && ["Language", "Tool/BI", "Cloud/DW"].includes(n.category);
+        });
+
+        var visibleIds = [roleId, ...level1, ...level2, ...level3];
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: !visibleIds.includes(n.id) })));
+
+        // Zoom spécifique métier
+        setTimeout(() => {
+            network.focus(roleId, {
+                scale: 0.8, 
+                animation: { duration: 1000 }
+            });
+        }, 300);
+
+    } else if (catName !== 'all') {
+        nodes.update(allNodes.map(n => ({ id: n.id, hidden: n.category !== catName })));
+        setTimeout(() => { network.fit({ animation: true }); }, 300);
+    } else {
+        resetGraph();
+    }
+}
+
+network.on("doubleClick", function(params) {
+    if (params.nodes.length > 0) {
+        var root = params.nodes[0];
+        var l1 = network.getConnectedNodes(root);
+        var l2 = getNextLevelNeighbors(l1);
+        var neighborhood = new Set([root, ...l1, ...l2]);
+        nodes.update(nodes.get().map(n => ({ id: n.id, hidden: !neighborhood.has(n.id) })));
+        network.focus(root, { scale: 1.0, animation: true });
+    }
+});
+
+// FONCTION RÉINITIALISER
+function resetGraph() {
+    nodes.update(nodes.get().map(n => ({id: n.id, hidden: false})));
+    document.getElementById('roleFilter').value = 'all';
+    document.getElementById('catFilter').value = 'all';
+    
+    // On attend un tout petit peu que les noeuds "reviennent" avant de cadrer
+    setTimeout(() => {
+        network.moveTo({
+            position: {x: 0, y: 0},
+            scale: 0.6, // <--- RÉGLAGE ZOOM RÉINITIALISATION
+            animation: { duration: 1000 }
+        });
+    }, 200);
+}
+
+// ZOOM AU DÉMARRAGE : Méthode de sécurité
+network.on("stabilizationIterationsDone", function () {
+    network.moveTo({
+        position: {x: 0, y: 0},
+        scale: 0.6, // <--- RÉGLAGE ZOOM DÉMARRAGE
+        animation: { duration: 800 }
+    });
+});
+
+</script>
+
+    </body>
+</html>
